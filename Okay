@@ -115,3 +115,122 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage");
 			end
 		end
 	end
+
+Tabs.EspTab:Section({
+		Title = gradient("Special ESP", Color3.fromHex("#b914fa"), Color3.fromHex("#7023c2"))
+	});
+	Tabs.EspTab:Toggle({
+		Title = gradient("Higlight Murder", Color3.fromHex("#e80909"), Color3.fromHex("#630404")),
+		Default = false,
+		Callback = function(state)
+			ESPConfig.HighlightMurderer = state;
+			if  not state then
+				UpdateHighlights();
+			end
+		end
+	});
+	Tabs.EspTab:Toggle({
+		Title = gradient("Highlight Innocent", Color3.fromHex("#0ff707"), Color3.fromHex("#1e690c")),
+		Default = false,
+		Callback = function(state)
+			ESPConfig.HighlightInnocent = state;
+			if  not state then
+				UpdateHighlights();
+			end
+		end
+	});
+	Tabs.EspTab:Toggle({
+		Title = gradient("Highlight Sheriff", Color3.fromHex("#001e80"), Color3.fromHex("#16f2d9")),
+		Default = false,
+		Callback = function(state)
+			ESPConfig.HighlightSheriff = state;
+			if  not state then
+				UpdateHighlights();
+			end
+		end
+	});
+	local gunDropESPEnabled = false;
+	local gunDropHighlight = nil;
+	local mapPaths = {
+		"ResearchFacility",
+		"Hospital3",
+		"MilBase",
+		"House2",
+		"Workplace",
+		"Mansion2",
+		"BioLab",
+		"Hotel",
+		"Factory",
+		"Bank2",
+		"PoliceStation"
+	};
+	local function createGunDropHighlight(gunDrop)
+		if (gunDropESPEnabled and gunDrop and  not gunDrop:FindFirstChild("GunDropHighlight")) then
+			local highlight = Instance.new("Highlight");
+			highlight.Name = "GunDropHighlight";
+			highlight.FillColor = Color3.fromRGB(255, 215, 0);
+			highlight.OutlineColor = Color3.fromRGB(255, 165, 0);
+			highlight.Adornee = gunDrop;
+			highlight.Parent = gunDrop;
+		end
+	end
+	local function updateGunDropESP()
+		for _, mapName in pairs(mapPaths) do
+			local map = workspace:FindFirstChild(mapName);
+			if map then
+				local gunDrop = map:FindFirstChild("GunDrop");
+				if (gunDrop and gunDrop:FindFirstChild("GunDropHighlight")) then
+					gunDrop.GunDropHighlight:Destroy();
+				end
+			end
+		end
+		if gunDropESPEnabled then
+			for _, mapName in pairs(mapPaths) do
+				local map = workspace:FindFirstChild(mapName);
+				if map then
+					local gunDrop = map:FindFirstChild("GunDrop");
+					if gunDrop then
+						createGunDropHighlight(gunDrop);
+					end
+				end
+			end
+		end
+	end
+	local function monitorGunDrops()
+		for _, mapName in pairs(mapPaths) do
+			local map = workspace:FindFirstChild(mapName);
+			if map then
+				map.ChildAdded:Connect(function(child)
+					if (child.Name == "GunDrop") then
+						createGunDropHighlight(child);
+					end
+				end);
+			end
+		end
+	end
+	monitorGunDrops();
+	Tabs.EspTab:Toggle({
+		Title = gradient("GunDrop Highlight", Color3.fromHex("#ffff00"), Color3.fromHex("#4f4f00")),
+		Default = false,
+		Callback = function(state)
+			gunDropESPEnabled = state;
+			updateGunDropESP();
+		end
+	});
+	workspace.ChildAdded:Connect(function(child)
+		if table.find(mapPaths, child.Name) then
+			task.wait(2);
+			updateGunDropESP();
+		end
+	end);
+	RunService.RenderStepped:Connect(function()
+		UpdateRoles();
+		if (ESPConfig.HighlightMurderer or ESPConfig.HighlightInnocent or ESPConfig.HighlightSheriff) then
+			UpdateHighlights();
+		end
+	end);
+	Players.PlayerRemoving:Connect(function(player)
+		if (player == LP) then
+			RemoveAllHighlights();
+		end
+	end);
