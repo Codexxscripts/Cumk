@@ -140,7 +140,7 @@ Tabs.EspTab:Section({
 		end
 	});
 	Tabs.EspTab:Toggle({
-		Title = gradient("Highlight Sheriff", 
+		Title = ("Highlight Sheriff"), 
 		Default = false,
 		Callback = function(state)
 			ESPConfig.HighlightSheriff = state;
