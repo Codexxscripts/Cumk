@@ -115,13 +115,9 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage");
 			end
 		end
 	end
+-- Esp lol
+	local Toggle = Tabs.EspTab:AddToggle("Higlight Murder", {Title = "Higlight Murder", Default = false, })
 
-Tabs.EspTab:Section({
-		Title = gradient("Special ESP", Color3.fromHex("#b914fa"), Color3.fromHex("#7023c2"))
-	});
-	Tabs.EspTab:Toggle({
-		Title = gradient("Higlight Murder", Color3.fromHex("#e80909"), Color3.fromHex("#630404")),
-		Default = false,
 		Callback = function(state)
 			ESPConfig.HighlightMurderer = state;
 			if  not state then
@@ -129,9 +125,8 @@ Tabs.EspTab:Section({
 			end
 		end
 	});
-	Tabs.EspTab:Toggle({
-		Title = gradient("Highlight Innocent", Color3.fromHex("#0ff707"), Color3.fromHex("#1e690c")),
-		Default = false,
+	local Toggle = Tabs.EspTab:AddToggle("Highlight Innocent", {Title = "Highlight Innocent", Default = false, })
+	
 		Callback = function(state)
 			ESPConfig.HighlightInnocent = state;
 			if  not state then
@@ -139,9 +134,7 @@ Tabs.EspTab:Section({
 			end
 		end
 	});
-	Tabs.EspTab:Toggle({
-		Title = ("Highlight Sheriff"), 
-		Default = false,
+local Toggle = Tabs.EspTab:AddToggle("Highlight Sheriff", {Title = "Highlight Sheriff", Default = false, })
 		Callback = function(state)
 			ESPConfig.HighlightSheriff = state;
 			if  not state then
