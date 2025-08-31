@@ -29,4 +29,89 @@ do
         Duration = 5 -- Set to nil to make the notification not disappear
     })
 
-
+local ReplicatedStorage = game:GetService("ReplicatedStorage");
+	local Players = game:GetService("Players");
+	local RunService = game:GetService("RunService");
+	local LP = Players.LocalPlayer;
+	local ESPConfig = {
+		HighlightMurderer = false,
+		HighlightInnocent = false,
+		HighlightSheriff = false
+	};
+	local Murder, Sheriff, Hero;
+	local roles = {};
+	function CreateHighlight(player)
+		if ((player ~= LP) and player.Character and  not player.Character:FindFirstChild("Highlight")) then
+			local highlight = Instance.new("Highlight");
+			highlight.Parent = player.Character;
+			highlight.Adornee = player.Character;
+			highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop;
+			return highlight;
+		end
+		return player.Character and player.Character:FindFirstChild("Highlight") ;
+	end
+	function RemoveAllHighlights()
+		for _, player in pairs(Players:GetPlayers()) do
+			if (player.Character and player.Character:FindFirstChild("Highlight")) then
+				player.Character.Highlight:Destroy();
+			end
+		end
+	end
+	function UpdateHighlights()
+		for _, player in pairs(Players:GetPlayers()) do
+			if ((player ~= LP) and player.Character) then
+				local highlight = player.Character:FindFirstChild("Highlight");
+				if  not (ESPConfig.HighlightMurderer or ESPConfig.HighlightInnocent or ESPConfig.HighlightSheriff) then
+					if highlight then
+						highlight:Destroy();
+					end
+					return;
+				end
+				local shouldHighlight = false;
+				local color = Color3.new(0, 1, 0);
+				if ((player.Name == Murder) and IsAlive(player) and ESPConfig.HighlightMurderer) then
+					color = Color3.fromRGB(255, 0, 0);
+					shouldHighlight = true;
+				elseif ((player.Name == Sheriff) and IsAlive(player) and ESPConfig.HighlightSheriff) then
+					color = Color3.fromRGB(0, 0, 255);
+					shouldHighlight = true;
+				elseif (ESPConfig.HighlightInnocent and IsAlive(player) and (player.Name ~= Murder) and (player.Name ~= Sheriff) and (player.Name ~= Hero)) then
+					color = Color3.fromRGB(0, 255, 0);
+					shouldHighlight = true;
+				elseif ((player.Name == Hero) and IsAlive(player) and  not IsAlive(game.Players[Sheriff]) and ESPConfig.HighlightSheriff) then
+					color = Color3.fromRGB(255, 250, 0);
+					shouldHighlight = true;
+				end
+				if shouldHighlight then
+					highlight = CreateHighlight(player);
+					if highlight then
+						highlight.FillColor = color;
+						highlight.OutlineColor = color;
+						highlight.Enabled = true;
+					end
+				elseif highlight then
+					highlight.Enabled = false;
+				end
+			end
+		end
+	end
+	function IsAlive(player)
+		for name, data in pairs(roles) do
+			if (player.Name == name) then
+				return  not data.Killed and  not data.Dead ;
+			end
+		end
+		return false;
+	end
+	local function UpdateRoles()
+		roles = ReplicatedStorage:FindFirstChild("GetPlayerData", true):InvokeServer();
+		for name, data in pairs(roles) do
+			if (data.Role == "Murderer") then
+				Murder = name;
+			elseif (data.Role == "Sheriff") then
+				Sheriff = name;
+			elseif (data.Role == "Hero") then
+				Hero = name;
+			end
+		end
+	end
